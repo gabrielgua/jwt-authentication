@@ -27,10 +27,9 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<AuthModel> register(@RequestBody UserRegisterRequest request) {
+    public ResponseEntity<AuthModel> register(@RequestBody @Valid UserRegisterRequest request) {
         var user = assembler.toEntity(request);
         return ResponseEntity.ok(authService.register(userService.save(user)));
-
     }
 
 
