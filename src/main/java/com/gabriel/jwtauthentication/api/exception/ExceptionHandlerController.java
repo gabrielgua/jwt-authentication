@@ -7,6 +7,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import java.nio.file.AccessDeniedException;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -101,6 +103,31 @@ public class ExceptionHandlerController extends ResponseEntityExceptionHandler {
 
 
         var error = createErrorBuilder(status, type, ex.getMessage()).build();
+
+        return handleExceptionInternal(ex, error, new HttpHeaders(), status, request);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<?> handleAccessDenied(AccessDeniedException ex, WebRequest request) {
+        var status = HttpStatus.UNAUTHORIZED;
+        var message = "You don't have access to this feature.";
+        var type = ErrorType.ACCESS_DENIED;
+
+        var error = createErrorBuilder(status, type, message)
+                .build();
+
+        return handleExceptionInternal(ex, error, new HttpHeaders(), status, request);
+
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<?> handleBadCredentials(BadCredentialsException ex, WebRequest request) {
+        var status = HttpStatus.FORBIDDEN;
+        var type = ErrorType.BAD_CREDENTIALS;
+        var message = "Invalid credentials, check and try the login again.";
+
+        var error = createErrorBuilder(status, type, message)
+                .build();
 
         return handleExceptionInternal(ex, error, new HttpHeaders(), status, request);
     }
