@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.fasterxml.jackson.databind.exc.PropertyBindingException;
 import com.gabriel.jwtauthentication.domain.exception.GenericException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.security.SignatureException;
 import lombok.extern.slf4j.Slf4j;
 import org.flywaydb.core.internal.util.ExceptionUtils;
 import org.springframework.http.HttpHeaders;
@@ -182,6 +184,30 @@ public class ExceptionHandlerController extends ResponseEntityExceptionHandler {
         var status = HttpStatus.FORBIDDEN;
         var type = ErrorType.BAD_CREDENTIALS;
         var message = "Invalid credentials, check and try the login again.";
+
+        var error = createErrorBuilder(status, type, message)
+                .build();
+
+        return handleExceptionInternal(ex, error, new HttpHeaders(), status, request);
+    }
+
+    @ExceptionHandler(MalformedJwtException.class)
+    public ResponseEntity<?> handleMalformedJwt(MalformedJwtException ex, WebRequest request) {
+        var status = HttpStatus.FORBIDDEN;
+        var type = ErrorType.INVALID_TOKEN;
+        var message = "Ivalid access token";
+
+        var error = createErrorBuilder(status, type, message)
+                .build();
+
+        return handleExceptionInternal(ex, error, new HttpHeaders(), status, request);
+    }
+
+    @ExceptionHandler(SignatureException.class)
+    public ResponseEntity<?> handleSignature(SignatureException ex, WebRequest request) {
+        var status = HttpStatus.FORBIDDEN;
+        var type = ErrorType.INVALID_TOKEN;
+        var message = "Ivalid access token";
 
         var error = createErrorBuilder(status, type, message)
                 .build();
