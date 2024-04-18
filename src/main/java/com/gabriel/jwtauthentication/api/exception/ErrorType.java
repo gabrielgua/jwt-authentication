@@ -6,10 +6,10 @@ import lombok.Getter;
 public enum ErrorType {
 
     GENERIC("/generic-error", "Generic Error"),
+    BAD_REQUEST("/bad-request", "Bad request"),
     ACCESS_DENIED("/access-denied", "Access Denied"),
     BAD_CREDENTIALS("/bad-credentials", "Bad Credentials"),
-    INVALID_ARGUMENTS("/invalid-arguments", "Invalid Arguments"),
-    INVALID_CREDENTIALS("/invalid-credentials", "Invalid Credentials");
+    INVALID_ARGUMENTS("/invalid-arguments", "Invalid Arguments");
 
 
     private final String uri;

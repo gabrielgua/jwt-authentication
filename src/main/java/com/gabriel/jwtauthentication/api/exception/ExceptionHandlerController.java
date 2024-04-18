@@ -1,12 +1,17 @@
 package com.gabriel.jwtauthentication.api.exception;
 
 
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import com.fasterxml.jackson.databind.exc.PropertyBindingException;
 import com.gabriel.jwtauthentication.domain.exception.GenericException;
 import lombok.extern.slf4j.Slf4j;
+import org.flywaydb.core.internal.util.ExceptionUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -89,6 +94,58 @@ public class ExceptionHandlerController extends ResponseEntityExceptionHandler {
                            .build();
 
                 }).collect(Collectors.toList());
+    }
+
+    private ResponseEntity<Object> handlePropertyBinding(PropertyBindingException ex, HttpHeaders headers, HttpStatusCode statusCode, WebRequest request) {
+        var status = HttpStatus.valueOf(statusCode.value());
+        var path = joinPath(ex.getPath());
+        var className = ex.getReferringClass().getSimpleName();
+        var type = ErrorType.BAD_REQUEST;
+        var message = String.format("The '%s' property doesn't exist on type '%s'.", path, className);
+
+        var error = createErrorBuilder(status, type, message)
+                .build();
+
+        return handleExceptionInternal(ex, error, headers, status, request);
+    }
+
+    private ResponseEntity<Object> handleInvalidFormat(InvalidFormatException ex, HttpHeaders headers, HttpStatusCode statusCode, WebRequest request) {
+        var status = HttpStatus.valueOf(statusCode.value());
+        var path = joinPath(ex.getPath());
+        var className = ex.getTargetType().getSimpleName();
+        var type = ErrorType.BAD_REQUEST;
+        var message = String.format("The '%s' property received a '%s' value, but was expecting a '%s'.", path, ex.getValue(), className);
+
+        var error = createErrorBuilder(status, type, message)
+                .build();
+
+        return handleExceptionInternal(ex, error, headers, status, request);
+    }
+
+
+    private String joinPath(List<JsonMappingException.Reference> references) {
+        return references.stream()
+                .map(JsonMappingException.Reference::getFieldName)
+                .collect(Collectors.joining("."));
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleHttpMessageNotReadable(HttpMessageNotReadableException ex, HttpHeaders headers, HttpStatusCode statusCode, WebRequest request) {
+        Throwable rootCause = ExceptionUtils.getRootCause(ex);
+        if (rootCause instanceof InvalidFormatException) {
+            return handleInvalidFormat((InvalidFormatException) rootCause, headers, statusCode, request);
+        } else if (rootCause instanceof PropertyBindingException) {
+            return handlePropertyBinding((PropertyBindingException) rootCause, headers, statusCode, request);
+        }
+
+        var status = HttpStatus.valueOf(statusCode.value());
+        var type = ErrorType.BAD_REQUEST;
+        var message = "Invalid body request.";
+
+        var error = createErrorBuilder(status, type, message)
+                .build();
+
+        return handleExceptionInternal(ex, error, headers, status, request);
     }
 
     @Override
