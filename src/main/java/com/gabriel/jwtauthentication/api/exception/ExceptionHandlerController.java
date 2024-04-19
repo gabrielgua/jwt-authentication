@@ -168,7 +168,7 @@ public class ExceptionHandlerController extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<?> handleAccessDenied(AccessDeniedException ex, WebRequest request) {
-        var status = HttpStatus.UNAUTHORIZED;
+        var status = HttpStatus.FORBIDDEN;
         var message = "You don't have access to this feature.";
         var type = ErrorType.ACCESS_DENIED;
 
@@ -181,33 +181,9 @@ public class ExceptionHandlerController extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<?> handleBadCredentials(BadCredentialsException ex, WebRequest request) {
-        var status = HttpStatus.FORBIDDEN;
+        var status = HttpStatus.UNAUTHORIZED;
         var type = ErrorType.BAD_CREDENTIALS;
         var message = "Invalid credentials, check and try the login again.";
-
-        var error = createErrorBuilder(status, type, message)
-                .build();
-
-        return handleExceptionInternal(ex, error, new HttpHeaders(), status, request);
-    }
-
-    @ExceptionHandler(MalformedJwtException.class)
-    public ResponseEntity<?> handleMalformedJwt(MalformedJwtException ex, WebRequest request) {
-        var status = HttpStatus.FORBIDDEN;
-        var type = ErrorType.INVALID_TOKEN;
-        var message = "Ivalid access token";
-
-        var error = createErrorBuilder(status, type, message)
-                .build();
-
-        return handleExceptionInternal(ex, error, new HttpHeaders(), status, request);
-    }
-
-    @ExceptionHandler(SignatureException.class)
-    public ResponseEntity<?> handleSignature(SignatureException ex, WebRequest request) {
-        var status = HttpStatus.FORBIDDEN;
-        var type = ErrorType.INVALID_TOKEN;
-        var message = "Ivalid access token";
 
         var error = createErrorBuilder(status, type, message)
                 .build();
