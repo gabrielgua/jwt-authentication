@@ -4,7 +4,9 @@ package com.gabriel.jwtauthentication.api.exception;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.fasterxml.jackson.databind.exc.PropertyBindingException;
+import com.gabriel.jwtauthentication.domain.exception.DuplicateEntryException;
 import com.gabriel.jwtauthentication.domain.exception.GenericException;
+import com.gabriel.jwtauthentication.domain.exception.UserNotFoundException;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.security.SignatureException;
 import lombok.extern.slf4j.Slf4j;
@@ -187,6 +189,28 @@ public class ExceptionHandlerController extends ResponseEntityExceptionHandler {
 
         var error = createErrorBuilder(status, type, message)
                 .build();
+
+        return handleExceptionInternal(ex, error, new HttpHeaders(), status, request);
+    }
+
+    @ExceptionHandler(DuplicateEntryException.class)
+    public ResponseEntity<?> handleDuplicateEntry(DuplicateEntryException ex, WebRequest request) {
+        var status = HttpStatus.CONFLICT;
+        var type = ErrorType.DUPLICATE_ENTRY;
+        var message = ex.getMessage();
+
+        var error = createErrorBuilder(status, type, message).build();
+
+        return handleExceptionInternal(ex, error, new HttpHeaders(), status, request);
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<?> handleUserNotFound(UserNotFoundException ex, WebRequest request) {
+        var status = HttpStatus.NOT_FOUND;
+        var type = ErrorType.NOT_FOUND;
+        var message = ex.getMessage();
+
+        var error = createErrorBuilder(status, type, message).build();
 
         return handleExceptionInternal(ex, error, new HttpHeaders(), status, request);
     }

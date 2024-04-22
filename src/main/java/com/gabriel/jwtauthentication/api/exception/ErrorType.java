@@ -6,9 +6,11 @@ import lombok.Getter;
 public enum ErrorType {
 
     GENERIC("/generic-error", "Generic Error"),
+    NOT_FOUND("/not-found", "Not found"),
     BAD_REQUEST("/bad-request", "Bad request"),
     ACCESS_DENIED("/access-denied", "Access Denied"),
     BAD_CREDENTIALS("/bad-credentials", "Bad Credentials"),
+    DUPLICATE_ENTRY("/duplicate-entry", "Duplicate Entry"),
     INVALID_ARGUMENTS("/invalid-arguments", "Invalid Arguments");
 
 
